@@ -67,19 +67,19 @@ All text and critical content must stay inside title safe.
 - Cards on dark bg: minimum `[0.18–0.22]` fill — must be distinguishable
 - Borders: stroke at 30-50% opacity, slightly brighter than fill
 
-### Typography Hierarchy
-- Primary: bold, 42–64px, white
-- Secondary: regular/light, 24–36px, muted (80-90% white or tinted)
+### Typography Hierarchy (UHD sizes)
+- Primary: bold, 84–128px, white
+- Secondary: regular/light, 48–72px, muted (80-90% white or tinted)
 - Tracking: headlines 80–150, body 20–60, ALL CAPS always needs 100+
-- Line spacing: 35-45px baseline-to-baseline
+- Line spacing: 70-90px baseline-to-baseline
 - Never same size + weight for two text elements
 
-### Spacing
-- Padding inside cards: 20-30px
-- Element gap: 15-25px
-- Margins: minimum 96px from comp edges (title safe)
-- Accent bars: 3-5px wide, aligned to card left edge
-- Decorative lines: NEVER overlap text. Place 20px+ below lowest baseline. Text extends ~70% of fontSize above its baseline.
+### Spacing (UHD)
+- Padding inside cards: 40-60px
+- Element gap: 30-50px
+- Margins: minimum 192px from comp edges (title safe)
+- Accent bars: 6-10px wide, aligned to card left edge
+- Decorative lines: NEVER overlap text. Place 40px+ below lowest baseline. Text extends ~70% of fontSize above its baseline.
 
 ### Color (all RGB 0.0–1.0)
 - Dark backgrounds: `[0.08, 0.08, 0.1]` or `[0.067, 0.067, 0.067]`
@@ -104,10 +104,10 @@ All text and critical content must stay inside title safe.
 - Loose (cinematic): 0.2–0.4s
 - Background always animates in FIRST, text follows after
 
-### Animation Amounts
-- Slide in: 20-40px movement, NOT 100+
+### Animation Amounts (UHD)
+- Slide in: 30-60px movement, NOT 200+
 - Scale in: 0% to 100% direct. **NEVER overshoot** (no 105%→100% bounce)
-- Fade in: always combine with subtle position shift (10-20px)
+- Fade in: always combine with subtle position shift (20-40px)
 - Trim path paint-on: 0.4-0.8s per element
 - No bounce, no overshoot, no elastic — motion is smooth, direct, and intentional
 

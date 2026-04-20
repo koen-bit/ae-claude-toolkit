@@ -1,9 +1,14 @@
 app.beginUndoGroup("Iceberg Leaders Graphic");
 
 (function() {
-    var W = 1920, H = 1080;
+    // Include shared helpers
+    var helpersFile = new File(new File($.fileName).parent.fsName + "/lib/helpers.jsx");
+    if (helpersFile.exists) { $.evalFile(helpersFile); }
+
+    var W = 3840, H = 2160;
     var cx = W/2, cy = H/2;
 
+    // Brand colors
     var red = [0.812, 0.071, 0.071];
     var darkRed = [0.55, 0.05, 0.08];
     var charcoal = [0.2, 0.2, 0.22];
@@ -11,71 +16,11 @@ app.beginUndoGroup("Iceberg Leaders Graphic");
     var lineColor = [0.12, 0.12, 0.12];
     var white = [1, 1, 1];
 
-    // ---- FIND OR CREATE COMP ----
-    var compName = "99% of Leaders - Iceberg";
-    var comp = null;
-    for (var i = 1; i <= app.project.numItems; i++) {
-        if (app.project.item(i) instanceof CompItem && app.project.item(i).name === compName) {
-            comp = app.project.item(i);
-            break;
-        }
-    }
-    if (comp) {
-        // Clear all layers
-        while (comp.numLayers > 0) comp.layer(1).remove();
-    } else {
-        comp = app.project.items.addComp(compName, W, H, 1, 8, 30);
-    }
+    // Find or create comp (UHD)
+    var comp = findOrCreateComp("99% of Leaders - Iceberg", W, H, 8, 30);
     comp.bgColor = tan;
 
-    // ---- HELPERS ----
-    function deadFlat(prop, k) {
-        var dims = 1;
-        try { dims = prop.value.length; } catch(e) {}
-        var ease = new KeyframeEase(0, 85);
-        var arr = [];
-        for (var d = 0; d < (dims > 1 ? dims : 1); d++) arr.push(ease);
-        try { prop.setTemporalEaseAtKey(k, arr, arr); } catch(e) {}
-    }
-    function deadFlatAll(prop) { for (var k = 1; k <= prop.numKeys; k++) deadFlat(prop, k); }
-
-    // Apple-style easing: fast start (low influence out on k1), smooth stop (high influence in on k2)
-    function appleEase(prop, k1, k2) {
-        var dims = 1;
-        try { dims = prop.value.length; } catch(e) {}
-        var fastOut = new KeyframeEase(0, 5);
-        var smoothIn = new KeyframeEase(0, 90);
-        var arrFast = [], arrSmooth = [];
-        for (var d = 0; d < (dims > 1 ? dims : 1); d++) {
-            arrFast.push(fastOut);
-            arrSmooth.push(smoothIn);
-        }
-        try {
-            prop.setTemporalEaseAtKey(k1, arrFast, arrFast);
-            prop.setTemporalEaseAtKey(k2, arrSmooth, arrSmooth);
-        } catch(e) {}
-    }
-    function bezierAll(prop) {
-        for (var k = 1; k <= prop.numKeys; k++)
-            prop.setInterpolationTypeAtKey(k, KeyframeInterpolationType.BEZIER, KeyframeInterpolationType.BEZIER);
-    }
-    function centerTextAnchor(layer) {
-        var r = layer.sourceRectAtTime(0, false);
-        layer.transform.anchorPoint.setValue([r.left + r.width/2, r.top + r.height/2]);
-    }
-    function fadeSlideIn(layer, t, dur, yOff) {
-        var pos = layer.transform.position;
-        var base = pos.value;
-        pos.setValueAtTime(t, [base[0], base[1] + yOff]);
-        pos.setValueAtTime(t + dur, base);
-        bezierAll(pos); deadFlatAll(pos);
-        var opa = layer.transform.opacity;
-        opa.setValueAtTime(t, 0);
-        opa.setValueAtTime(t + dur, 100);
-        bezierAll(opa); deadFlatAll(opa);
-    }
-
-    // Add a smooth flowing path
+    // Helper: add a smooth flowing path with trim draw-on
     function addFlowLine(layer, name, verts, tanIn, tanOut, closed, strokeW, opacity, delay, drawDur) {
         var grp = layer.content.addProperty("ADBE Vector Group");
         grp.name = name;
@@ -107,329 +52,156 @@ app.beginUndoGroup("Iceberg Leaders Graphic");
     comp.layers.addSolid(tan, "BG_Cream", W, H, 1);
 
     // ============================================================
-    // ICEBERG LINE ART — smooth flowing bezier curves
-    // Key: use LARGE tangent handles (40-120px) for flowing curves
+    // ICEBERG LINE ART (scaled 2x for UHD)
     // ============================================================
     var iceLayer = comp.layers.addShape();
     iceLayer.name = "Iceberg_Lines";
-    iceLayer.transform.position.setValue([cx, cy + 50]);
+    iceLayer.transform.position.setValue([cx, cy + 100]);
 
     // --- WATERLINE ---
     addFlowLine(iceLayer, "Waterline",
-        [[-550, 0], [-200, 0], [0, 0], [200, 0], [550, 0]],
-        [[0,0], [-120,0], [-80,0], [-80,0], [-120,0]],
-        [[120,0], [80,0], [80,0], [120,0], [0,0]],
-        false, 1.2, 55, 0.3, 1.0
+        [[-1100, 0], [-400, 0], [0, 0], [400, 0], [1100, 0]],
+        [[0,0], [-240,0], [-160,0], [-160,0], [-240,0]],
+        [[240,0], [160,0], [160,0], [240,0], [0,0]],
+        false, 3, 55, 0.3, 1.0
     );
 
-    // --- PEAK: main mountain silhouette (few points, big smooth tangents) ---
+    // --- PEAK: main mountain ---
     addFlowLine(iceLayer, "Peak_Outline",
         [
-            [-300, 0],       // left base
-            [-150, -40],     // left foothill
-            [-60, -110],     // left shoulder
-            [0, -180],       // summit
-            [70, -100],      // right shoulder
-            [170, -35],      // right foothill
-            [310, 0]         // right base
+            [-600, 0], [-300, -80], [-120, -220], [0, -360],
+            [140, -200], [340, -70], [620, 0]
         ],
         [
-            [0, 0],
-            [-60, 15],     // smooth approach from left
-            [-40, 30],     // sweeping up
-            [-25, 40],     // into summit
-            [-30, -35],    // descending from summit
-            [-50, 25],     // smooth descent
-            [-60, 12]      // approaching base
+            [0,0], [-120,30], [-80,60], [-50,80],
+            [-60,-70], [-100,50], [-120,24]
         ],
         [
-            [50, -10],     // leaving left base
-            [40, -25],     // climbing
-            [30, -35],     // steep climb
-            [25, 35],      // over summit
-            [45, 25],      // descending
-            [60, -15],     // flattening
-            [0, 0]
+            [100,-20], [80,-50], [60,-70], [50,70],
+            [90,50], [120,-30], [0,0]
         ],
-        false, 1.8, 90, 0.4, 1.6
+        false, 3.6, 90, 0.4, 1.6
     );
 
-    // --- PEAK: secondary ridge (softer, inner line) ---
+    // --- PEAK: secondary ridge ---
     addFlowLine(iceLayer, "Peak_InnerRidge",
         [
-            [-200, -10],
-            [-100, -60],
-            [-30, -120],
-            [0, -150],
-            [40, -110],
-            [120, -50],
-            [210, -8]
+            [-400, -20], [-200, -120], [-60, -240], [0, -300],
+            [80, -220], [240, -100], [420, -16]
         ],
         [
-            [0, 0],
-            [-40, 15],
-            [-30, 25],
-            [-15, 20],
-            [-15, -15],
-            [-35, 20],
-            [-40, 10]
+            [0,0], [-80,30], [-60,50], [-30,40],
+            [-30,-30], [-70,40], [-80,20]
         ],
         [
-            [35, -12],
-            [30, -20],
-            [15, -20],
-            [15, 18],
-            [30, -18],
-            [40, -12],
-            [0, 0]
+            [70,-24], [60,-40], [30,-40], [30,36],
+            [60,-36], [80,-24], [0,0]
         ],
-        false, 1.0, 65, 0.7, 1.3
+        false, 2.0, 65, 0.7, 1.3
     );
 
-    // --- UNDERWATER: main body — big sweeping organic outline ---
+    // --- PEAK: snow line ---
+    addFlowLine(iceLayer, "Peak_Snow",
+        [[-120, -170], [-70, -230], [-20, -290], [20, -250], [60, -200], [110, -160]],
+        [[0,0], [-16,20], [-10,20], [-10,-10], [-10,-16], [-16,-10]],
+        [[16,-20], [10,-20], [10,10], [10,16], [16,10], [0,0]],
+        false, 2.0, 65, 0.7, 1.0
+    );
+
+    // --- UNDERWATER: main body ---
     addFlowLine(iceLayer, "Under_MainOutline",
         [
-            [-290, 5],        // left waterline
-            [-280, 60],       // curves down left
-            [-220, 130],      // left body
-            [-140, 190],      // lower left
-            [-50, 230],       // approaching bottom
-            [10, 260],        // bottom tip
-            [70, 225],        // right rise
-            [150, 175],       // right body
-            [230, 110],       // upper right
-            [280, 50],        // near waterline right
-            [295, 5]          // right waterline
+            [-580, 10], [-560, 120], [-440, 260], [-280, 380],
+            [-100, 460], [20, 520], [140, 450], [300, 350],
+            [460, 220], [560, 100], [590, 10]
         ],
         [
-            [0, 0],
-            [-20, -20],
-            [-40, 30],
-            [-45, 25],
-            [-40, 15],
-            [-30, 15],
-            [-25, -15],
-            [-40, -20],
-            [-40, -30],
-            [-25, -25],
-            [-15, -18]
+            [0,0], [-40,-40], [-80,60], [-90,50],
+            [-80,30], [-60,30], [-50,-30], [-80,-40],
+            [-80,-60], [-50,-50], [-30,-36]
         ],
         [
-            [15, 20],
-            [30, 35],
-            [40, 30],
-            [45, 20],
-            [35, 18],
-            [30, -12],
-            [40, -25],
-            [40, -30],
-            [30, -30],
-            [15, -20],
-            [0, 0]
+            [30,40], [60,70], [80,60], [90,40],
+            [70,36], [60,-24], [80,-50], [80,-60],
+            [60,-60], [30,-40], [0,0]
         ],
-        false, 1.8, 85, 0.8, 2.2
+        false, 3.0, 85, 0.8, 2.2
     );
 
-    // --- UNDERWATER: flowing contour 1 (upper sweep) ---
+    // --- UNDERWATER: contour 1 ---
     addFlowLine(iceLayer, "Under_Flow1",
-        [
-            [-250, 40],
-            [-120, 75],
-            [0, 90],
-            [130, 70],
-            [260, 35]
-        ],
-        [
-            [0, 0],
-            [-50, 10],
-            [-50, 5],
-            [-50, -5],
-            [-50, -10]
-        ],
-        [
-            [50, -10],
-            [50, -5],
-            [50, 5],
-            [50, 10],
-            [0, 0]
-        ],
-        false, 1.0, 55, 1.0, 1.6
+        [[-500, 80], [-240, 150], [0, 180], [260, 140], [520, 70]],
+        [[0,0], [-100,20], [-100,10], [-100,-10], [-100,-20]],
+        [[100,-20], [100,-10], [100,10], [100,20], [0,0]],
+        false, 2.0, 55, 1.0, 1.6
     );
 
-    // --- UNDERWATER: flowing contour 2 (mid sweep) ---
+    // --- UNDERWATER: contour 2 ---
     addFlowLine(iceLayer, "Under_Flow2",
-        [
-            [-210, 90],
-            [-100, 130],
-            [0, 155],
-            [100, 140],
-            [200, 95]
-        ],
-        [
-            [0, 0],
-            [-45, 12],
-            [-45, 8],
-            [-40, -5],
-            [-45, -12]
-        ],
-        [
-            [40, -10],
-            [40, -8],
-            [45, 5],
-            [45, 12],
-            [0, 0]
-        ],
-        false, 1.0, 50, 1.3, 1.5
+        [[-420, 180], [-200, 260], [0, 310], [200, 280], [400, 190]],
+        [[0,0], [-90,24], [-90,16], [-80,-10], [-90,-24]],
+        [[80,-20], [80,-16], [90,10], [90,24], [0,0]],
+        false, 2.0, 50, 1.3, 1.5
     );
 
-    // --- UNDERWATER: flowing contour 3 (lower) ---
+    // --- UNDERWATER: contour 3 ---
     addFlowLine(iceLayer, "Under_Flow3",
-        [
-            [-160, 145],
-            [-60, 185],
-            [10, 210],
-            [80, 190],
-            [160, 145]
-        ],
-        [
-            [0, 0],
-            [-40, 12],
-            [-30, 10],
-            [-30, -8],
-            [-35, -15]
-        ],
-        [
-            [35, -10],
-            [30, -10],
-            [30, 8],
-            [40, 15],
-            [0, 0]
-        ],
-        false, 1.0, 45, 1.6, 1.4
+        [[-320, 290], [-120, 370], [20, 420], [160, 380], [320, 290]],
+        [[0,0], [-80,24], [-60,20], [-60,-16], [-70,-30]],
+        [[70,-20], [60,-20], [60,16], [80,30], [0,0]],
+        false, 2.0, 45, 1.6, 1.4
     );
 
-    // --- UNDERWATER: inner organic swirl ---
+    // --- UNDERWATER: inner swirl ---
     addFlowLine(iceLayer, "Under_Swirl",
-        [
-            [-120, 110],
-            [-40, 150],
-            [30, 180],
-            [0, 155],
-            [-50, 170],
-            [10, 210]
-        ],
-        [
-            [0, 0],
-            [-35, 10],
-            [-30, 10],
-            [-15, -12],
-            [-25, 5],
-            [-25, 8]
-        ],
-        [
-            [30, -8],
-            [30, -10],
-            [20, 15],
-            [20, 8],
-            [30, -8],
-            [0, 0]
-        ],
-        false, 0.8, 40, 1.8, 1.2
+        [[-240, 220], [-80, 300], [60, 360], [0, 310], [-100, 340], [20, 420]],
+        [[0,0], [-70,20], [-60,20], [-30,-24], [-50,10], [-50,16]],
+        [[60,-16], [60,-20], [40,30], [40,16], [60,-16], [0,0]],
+        false, 1.6, 40, 1.8, 1.2
     );
 
     // --- UNDERWATER: bottom tendril ---
     addFlowLine(iceLayer, "Under_Tendril",
-        [
-            [-30, 200],
-            [0, 240],
-            [15, 265],
-            [5, 240],
-            [25, 250]
-        ],
-        [
-            [0, 0],
-            [-15, 15],
-            [-8, 12],
-            [-5, -10],
-            [-10, 5]
-        ],
-        [
-            [12, -12],
-            [8, -12],
-            [5, 12],
-            [10, 5],
-            [0, 0]
-        ],
-        false, 0.8, 40, 2.2, 1.0
+        [[-60, 400], [0, 480], [30, 530], [10, 480], [50, 500]],
+        [[0,0], [-30,30], [-16,24], [-10,-20], [-20,10]],
+        [[24,-24], [16,-24], [10,24], [20,10], [0,0]],
+        false, 1.6, 40, 2.2, 1.0
     );
 
     // ============================================================
-    // NUMBERED CIRCLES
+    // NUMBERED CIRCLES (overlapping chain reaction)
     // ============================================================
     var circleData = [
-        { num: "1", y: cy - 40,  delay: 1.3 },
-        { num: "2", y: cy + 70,  delay: 1.6 },
-        { num: "3", y: cy + 180, delay: 1.9 },
-        { num: "4", y: cy + 280, delay: 2.2 }
+        { num: "1", y: cy - 80,  delay: 1.3 },
+        { num: "2", y: cy + 140, delay: 1.6 },
+        { num: "3", y: cy + 360, delay: 1.9 },
+        { num: "4", y: cy + 560, delay: 2.2 }
     ];
 
     for (var c = 0; c < circleData.length; c++) {
         var cd = circleData[c];
 
+        // Circle
         var cl = comp.layers.addShape();
         cl.name = "Circle_" + cd.num;
         var cg = cl.content.addProperty("ADBE Vector Group");
-        cg.content.addProperty("ADBE Vector Shape - Ellipse").property("ADBE Vector Ellipse Size").setValue([50, 50]);
+        cg.content.addProperty("ADBE Vector Shape - Ellipse").property("ADBE Vector Ellipse Size").setValue([100, 100]);
         cg.content.addProperty("ADBE Vector Graphic - Fill").property("ADBE Vector Fill Color").setValue(darkRed);
-
         cl.transform.position.setValue([cx, cd.y]);
+        appleReveal(cl, cd.delay, 0.5, 40, 15);
 
-        // Fade in + slide up — Apple-style: fast start, smooth stop
-        var cPos = cl.transform.position;
-        cPos.setValueAtTime(cd.delay, [cx, cd.y + 20]);
-        cPos.setValueAtTime(cd.delay + 0.5, [cx, cd.y]);
-        bezierAll(cPos); appleEase(cPos, 1, 2);
-
-        var cOp = cl.transform.opacity;
-        cOp.setValueAtTime(cd.delay, 0);
-        cOp.setValueAtTime(cd.delay + 0.5, 100);
-        bezierAll(cOp); appleEase(cOp, 1, 2);
-
-        // Gaussian blur that clears as it comes in
-        var cBlur = cl.property("ADBE Effect Parade").addProperty("ADBE Gaussian Blur 2");
-        var cBlurP = cBlur.property("Blurriness");
-        cBlurP.setValueAtTime(cd.delay, 15);
-        cBlurP.setValueAtTime(cd.delay + 0.5, 0);
-        bezierAll(cBlurP); appleEase(cBlurP, 1, 2);
-
-        // Number text
+        // Number
         var nl = comp.layers.addText(cd.num);
         nl.name = "Num_" + cd.num;
         var nd = nl.sourceText.value;
         nd.font = "Bodoni72-BookItalic";
-        nd.fontSize = 28;
+        nd.fontSize = 56;
         nd.fillColor = white;
         nd.justification = ParagraphJustification.CENTER_JUSTIFY;
         nl.sourceText.setValue(nd);
         centerTextAnchor(nl);
         nl.transform.position.setValue([cx, cd.y]);
-
-        // Match circle — slide up + fade + blur, same Apple easing
-        var nPos = nl.transform.position;
-        nPos.setValueAtTime(cd.delay, [cx, cd.y + 20]);
-        nPos.setValueAtTime(cd.delay + 0.5, [cx, cd.y]);
-        bezierAll(nPos); appleEase(nPos, 1, 2);
-
-        var nOp = nl.transform.opacity;
-        nOp.setValueAtTime(cd.delay, 0);
-        nOp.setValueAtTime(cd.delay + 0.5, 100);
-        bezierAll(nOp); appleEase(nOp, 1, 2);
-
-        var nBlur = nl.property("ADBE Effect Parade").addProperty("ADBE Gaussian Blur 2");
-        var nBlurP = nBlur.property("Blurriness");
-        nBlurP.setValueAtTime(cd.delay, 12);
-        nBlurP.setValueAtTime(cd.delay + 0.5, 0);
-        bezierAll(nBlurP); appleEase(nBlurP, 1, 2);
+        appleReveal(nl, cd.delay, 0.5, 40, 12);
     }
 
     // ============================================================
@@ -439,35 +211,35 @@ app.beginUndoGroup("Iceberg Leaders Graphic");
     thinkLayer.name = "Title_ThinkLikeThis";
     var td = thinkLayer.sourceText.value;
     td.font = "Bodoni72-BookItalic";
-    td.fontSize = 130;
+    td.fontSize = 260;
     td.fillColor = red;
     td.tracking = 60;
     td.justification = ParagraphJustification.CENTER_JUSTIFY;
     thinkLayer.sourceText.setValue(td);
     centerTextAnchor(thinkLayer);
-    thinkLayer.transform.position.setValue([cx, 215]);
-    fadeSlideIn(thinkLayer, 0.15, 0.8, 20);
+    thinkLayer.transform.position.setValue([cx, 430]);
+    fadeSlideIn(thinkLayer, 0.15, 0.8, 40);
     var ts = thinkLayer.property("ADBE Effect Parade").addProperty("ADBE Drop Shadow");
     ts.property("Opacity").setValue(25);
-    ts.property("Distance").setValue(4);
-    ts.property("Softness").setValue(12);
+    ts.property("Distance").setValue(8);
+    ts.property("Softness").setValue(24);
 
     var leadersLayer = comp.layers.addText("99% OF LEADERS");
     leadersLayer.name = "Title_99Percent";
     var ld = leadersLayer.sourceText.value;
     ld.font = "Akkordeon-Nine";
-    ld.fontSize = 72;
+    ld.fontSize = 144;
     ld.fillColor = charcoal;
     ld.tracking = 200;
     ld.justification = ParagraphJustification.CENTER_JUSTIFY;
     leadersLayer.sourceText.setValue(ld);
     centerTextAnchor(leadersLayer);
-    leadersLayer.transform.position.setValue([cx, 115]);
-    fadeSlideIn(leadersLayer, 0.0, 0.7, 15);
+    leadersLayer.transform.position.setValue([cx, 230]);
+    fadeSlideIn(leadersLayer, 0.0, 0.7, 30);
     var ls = leadersLayer.property("ADBE Effect Parade").addProperty("ADBE Drop Shadow");
     ls.property("Opacity").setValue(15);
-    ls.property("Distance").setValue(3);
-    ls.property("Softness").setValue(8);
+    ls.property("Distance").setValue(6);
+    ls.property("Softness").setValue(16);
 
     comp.openInViewer();
 })();
