@@ -9,6 +9,7 @@ Generate and animate After Effects compositions through Claude Code using direct
 - `brand/config.json` — Dan Martell brand colors (hex→RGB), fonts, graphic rules
 - `brand/editing-style-guide.md` — Full editing style guide (typography, graphics, color, sound)
 - `brand/style-guide-assets/` — Reference images, GIFs, color swatches
+- `docs/troubleshooting.md` — Common issues and fixes (AE crashes, font errors)
 - `scripts/` — Generated `.jsx` scripts to run in After Effects
 
 ## Core Rules
