@@ -1,7 +1,10 @@
 You are starting an After Effects graphics session. Follow these steps:
 
 ## 1. Load Context
-Read your After Effects notes at the project's `docs/extendscript-patterns.md` for ExtendScript patterns, MCP bridge capabilities, and workflow rules.
+Read ALL of these before doing anything:
+- `docs/extendscript-patterns.md` — ExtendScript patterns, MCP bridge capabilities, workflow rules
+- `docs/brand-guide.md` — Typography, text effects, drop shadow/glow values, graphics rules
+- `docs/brand-colors.md` — Color palette with AE-ready RGB values and copy-paste COLORS object
 
 ## 2. Check What's Open
 Use the MCP bridge `run-script` tool with `getProjectInfo` to see what comps exist in the current AE project. Report back what you find.
