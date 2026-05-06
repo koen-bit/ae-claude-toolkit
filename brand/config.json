@@ -1,0 +1,63 @@
+{
+    "name": "Dan Martell / Martell Media",
+    "tone": "Premium, Intentional, Simple, Minimalist",
+    "fonts": {
+        "primary": "BBNonamePro-Bold",
+        "primaryUsage": "Titles, lower thirds, key emphasis (sentence case). 80% of text.",
+        "secondary": "Bodoni 72-Book",
+        "secondaryStyle": "italic, sentence case",
+        "tertiary": "Akkordeon-Nine",
+        "tertiaryStyle": "ALL CAPS only",
+        "subtitles": "BBNonamePro-Bold + adjustment layer"
+    },
+    "colors": {
+        "blue": [0.039, 0.114, 0.686],
+        "buyBackBlue": [0.0, 0.635, 1.0],
+        "teal": [0.431, 0.973, 0.992],
+        "white": [1.0, 1.0, 1.0],
+        "midnightBlue": [0.047, 0.145, 0.314],
+        "purple": [0.537, 0.129, 0.953],
+        "darkGreen": [0.196, 0.435, 0.071],
+        "green": [0.341, 0.918, 0.227],
+        "yellow": [0.976, 0.949, 0.227],
+        "pink": [0.973, 0.412, 0.898],
+        "red": [0.812, 0.071, 0.071],
+        "orange": [1.0, 0.608, 0.063],
+        "tan": [0.949, 0.882, 0.773],
+        "black": [0.0, 0.0, 0.0],
+        "charcoal": [0.11, 0.11, 0.118],
+        "middleGrey": [0.502, 0.502, 0.502],
+        "lightGrey": [0.796, 0.796, 0.796]
+    },
+    "colorsHex": {
+        "blue": "0A1DAF",
+        "buyBackBlue": "00a2ff",
+        "teal": "6EF8FD",
+        "white": "FFFFFF",
+        "midnightBlue": "0C2550",
+        "purple": "8921F3",
+        "darkGreen": "326F12",
+        "green": "57EA3A",
+        "yellow": "F9F23A",
+        "pink": "F869E5",
+        "red": "CF1212",
+        "orange": "FF9B10",
+        "tan": "F2E1C5",
+        "black": "000000",
+        "charcoal": "1C1C1E",
+        "middleGrey": "808080",
+        "lightGrey": "CBCBCB"
+    },
+    "graphics": {
+        "alwaysDropShadow": true,
+        "dropShadowNote": "Always use slight drop shadow on text. Stack drop shadows or add low-exposure adjustment layer for readability.",
+        "glowUsage": "Sparingly, to emphasize key words only",
+        "animationStyle": "Smooth. All transitions, animations, fades must be fluid and polished."
+    },
+    "compositions": {
+        "default": { "width": 3840, "height": 2160, "frameRate": 30 },
+        "uhd": { "width": 3840, "height": 2160, "frameRate": 30 },
+        "square": { "width": 2160, "height": 2160, "frameRate": 30 },
+        "vertical": { "width": 2160, "height": 3840, "frameRate": 30 }
+    }
+}
